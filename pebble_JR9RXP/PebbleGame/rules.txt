@@ -1,0 +1,17 @@
+---------------------------------- Welcome to the Pebble Game ---------------------------------------------
+
+**Rules**
+
+1. Pebble is a two-player game played on an n x n board (where n can be 3, 4, or 5).
+
+2. Player One, who possesses black pebbles, takes the first turn.
+
+3. Player Two, with white pebbles, follows as the second player.
+
+4. You can move pebbles using the arrow keys.
+
+5. In a 3x3 board, you have 15 turns; in a 4x4 board, you have 20 turns, and in a 5x5 board, you have 30 turns.
+
+6. The goal of the game is to strategically push your opponent's pebbles off the board.
+
+Best of luck!

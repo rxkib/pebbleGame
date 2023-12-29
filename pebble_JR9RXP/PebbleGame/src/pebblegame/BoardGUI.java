@@ -1,0 +1,216 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package pebblegame;
+
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
+/**
+ * This class represents the graphical user interface (GUI) for the Pebble Game board.
+ * It displays the game board with buttons that represent pebbles and handles user interactions.
+ * Author: rakib
+ */
+public class BoardGUI {
+    private final JButton[][] boardButtons;
+    private final JPanel boardPanel;
+    private final int boardSize;
+    private PebbleBoard pebbleBoard;
+
+    /**
+     * Constructs a new BoardGUI instance with the specified board boardSize.
+     *
+     * @param boardSize The boardSize of the game board.
+     */
+    public BoardGUI(int boardSize) {
+        this.boardSize = boardSize;
+        this.pebbleBoard = new PebbleBoard(boardSize);
+        boardButtons = new JButton[boardSize][boardSize];
+        boardPanel = new JPanel();
+        this.boardPanel.setFocusable(true);
+        this.boardPanel.grabFocus();
+        boardPanel.addKeyListener(new BoardKeyListener());
+        boardPanel.setLayout(new GridLayout(boardSize, boardSize));
+
+        setupBoardButtons();
+    }
+
+    private void setupBoardButtons() {
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
+                JButton btn = new JButton();
+                btn.setFocusable(false);
+                btn.setPreferredSize(new Dimension(50, 50));
+                btn.addActionListener(new ButtonClickListener(i, j));
+
+                Pebble currentPebble = pebbleBoard.getPebble(i, j);
+                if (currentPebble != null) {
+                    currentPebble.setPosition(i, j);
+                    btn.setEnabled(true);
+                    btn.setBackground(currentPebble.getPebbleColor());
+                } else {
+                    btn.setEnabled(false);
+                }
+
+                boardButtons[i][j] = btn;
+                boardPanel.add(boardButtons[i][j]);
+            }
+        }
+    }
+
+    /**
+     * Updates the GUI to reflect the current state of the game board.
+     * This method refreshes the button colors based on the pebble positions on the board.
+     * It also checks for the game's completion and displays a message if the game is over.
+     */
+    public void update() {
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
+                JButton currentButton = boardButtons[i][j];
+                Pebble currentPebble = pebbleBoard.getPebble(i, j);
+
+                if (currentPebble == null) {
+                    currentButton.setEnabled(false);
+                    currentButton.setBackground(null);
+                } else {
+                    currentPebble.setPosition(i, j);
+                    currentButton.setBackground(currentPebble.getPebbleColor());
+                    currentButton.setEnabled(true);
+                }
+            }
+        }
+
+        checkGameOver();
+    }
+
+    private void checkGameOver() {
+        Players winner = pebbleBoard.findWinner();
+        if (winner != null) {
+            String message = "";
+
+            if (winner == Players.PLAYER1) {
+                message = "Player 1 Won the Game";
+            } else if (winner == Players.PLAYER2) {
+                message = "Player 2 Won the Game";
+            } else if (winner == Players.BOTH_PLAYERS) {
+                message = "It is a Tie. The Game is DRAW";
+            }
+
+            JOptionPane.showMessageDialog(boardPanel, message, "Game Over", JOptionPane.INFORMATION_MESSAGE);
+            pebbleBoard = new PebbleBoard(boardSize);
+            update();
+        }
+    }
+
+    /**
+     * Gets the JPanel representing the game board.
+     *
+     * @return The JPanel displaying the game board.
+     */
+    public JPanel getPanel() {
+        return this.boardPanel;
+    }
+
+/**
+ * This inner class represents an ActionListener for handling button clicks on the game board.
+ * It is used to respond to button clicks by selecting or deselecting pebbles on the board.
+ */
+class ButtonClickListener implements ActionListener {
+    int x, y;
+    Pebble current;
+
+    /**
+     * Constructs a ButtonClickListener instance with the specified coordinates (x, y).
+     *
+     * @param x The row coordinate of the button.
+     * @param y The column coordinate of the button.
+     */
+    ButtonClickListener(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    /**
+     * Handles the actionPerformed event when a button is clicked.
+     * It selects or deselects a pebble on the board based on the player's turn.
+     *
+     * @param event The ActionEvent generated by the button click.
+     */
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        current = pebbleBoard.getPebble(x, y);
+        if (current == null) {
+            return;
+        }
+        pebbleBoard.setSelectedPebble(null);
+        if (current.getPlayer() == pebbleBoard.getCurrentPlayer()) {
+            pebbleBoard.setSelectedPebble(current);
+        }
+    }
+}
+
+/**
+ * This inner class represents a KeyListener for handling keyboard input on the game board.
+ * It responds to arrow key presses to shift pebbles on the board and update the game state.
+ */
+class BoardKeyListener implements KeyListener {
+    /**
+     * Handles the keyPressed event when a key is pressed.
+     *
+     * @param event The KeyEvent generated by the key press.
+     */
+    @Override
+    public void keyPressed(KeyEvent event) {
+        // Not used in this implementation.
+    }
+
+    /**
+     * Handles the keyReleased event when a key is released.
+     * It processes arrow key releases to shift pebbles and advance the game.
+     *
+     * @param event The KeyEvent generated by the key release.
+     */
+    @Override
+    public void keyReleased(KeyEvent event) {
+        if (pebbleBoard.getSelectedPebble() != null) {
+            switch (event.getKeyCode()) {
+                case KeyEvent.VK_UP:
+                    pebbleBoard.shiftPebbles(Directions.NORTH);
+                    break;
+                case KeyEvent.VK_DOWN:
+                    pebbleBoard.shiftPebbles(Directions.SOUTH);
+                    break;
+                case KeyEvent.VK_RIGHT:
+                    pebbleBoard.shiftPebbles(Directions.EAST);
+                    break;
+                case KeyEvent.VK_LEFT:
+                    pebbleBoard.shiftPebbles(Directions.WEST);
+                    break;
+                default:
+                    break;
+            }
+
+            pebbleBoard.setSelectedPebble(null);
+            pebbleBoard.nextTurn();
+            update();
+        }
+    }
+
+    /**
+     * Handles the keyTyped event when a key is typed (e.g., character keys).
+     *
+     * @param event The KeyEvent generated by the key type.
+     */
+    @Override
+    public void keyTyped(KeyEvent event) {
+        // Not used in this implementation.
+    }
+}}
